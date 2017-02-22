@@ -3,17 +3,29 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?
-A: For a box in a column, iterate over all boxes in the column to determine if
-   a box (A) has exactly the same two digits as another box (B). If so,
-   iterate again over all boxes in the column to remove the digits in the boxes
-   that match the digits of the box A and it isn't the box B. Repeat the above
-   step for all columns, rows and squares.
+A: A naked twin is a situation in an unsolved Sudoku puzzle when more than
+   one box in a unit (a column, a row or a square of 9 boxes) has exactly
+   the same two digits. Under such a situation, it is a safe assumption that
+   no other unsolved box in the same unit can have the same digits as the
+   ones in the naked twins box. Therefore once we identify if a column, row
+   or a square has naked twins, we need to iterate over all other boxes in
+   the same column/row/square to eliminate matching digits of the naked twins.
+   The concept is extendable to more than two matches - to triples, quadruples etc.
+   In our implementation, we iterate over a column/row/square at a time to find
+   _unsolved_ boxes that match exactly with other boxes. These digits _must_ only
+   be placed in the exactly matching boxes, therefore any other non-fully matching
+   box can exclude matching digits.
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?
-A: Simple - just add an extra list which captures the two diagnols. Update the
-   peers to include diagnols. Use the 'eliminate' and 'only_choice' constraints
-   along with diagnols as part of 'units' to solve the sudoku.
+A: A diagnol sudoku is a sudoku with an additional constraint that a diagnol must
+   only have digits 1-9. In an unsolved sudoku, for all boxes which are yet to be
+   solved, we start with all possible answers 1-9 and then apply the constraint
+   that for any box in the diagnol, if we have a solution, then the digit represented
+   by the solved box can be eliminated from the unsolved box. After the first step, if
+   unsolved boxes have a digit that is only represented once, then it must be the solution
+   for that box as that digit is not represented by any other box in the diagnol. The above
+   two constraints can be iteratively used till a solution is found.
 
 ### Install
 
