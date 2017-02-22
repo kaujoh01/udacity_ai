@@ -12,8 +12,9 @@ class Sudoku:
                           for c in ['123', '456', '789']]
         # Diagnol units are boxes that are in a diagnol in the sudoku - in mathematical
         # terms these are boxes for which the column and row number is the same
-        self.dia_units = [['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9'],
-                          ['A9', 'B8', 'C7', 'D6', 'E5', 'F4', 'G3', 'H2', 'I1']]
+        self.dia_units = [[r+c for r,c in zip(self.rows,self.cols)],
+                          [r+c for r,c in zip(self.rows,self.cols[::-1])]]
+
         # All units (include diagnol units if is_diag=1)
         self.lst_units = self.row_units + self.col_units + self.sqr_units + (self.dia_units if is_diag==1 else [])
         self.units     = dict((s, [u for u in self.lst_units if s in u]) for s in self.boxes)
