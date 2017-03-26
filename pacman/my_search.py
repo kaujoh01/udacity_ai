@@ -145,20 +145,20 @@ class LazySearchProblem:
         self.goal_state = (randint(0,self.grid_size-1),randint(0,self.grid_size-1))
 
     def getStartState(self):
-        """
+        '''
         Returns the start state for the search problem
-        """
+        '''
         return self.strt_state
 
     def isGoalState(self, s):
-        """
+        '''
         state: Search state
         Returns True if and only if the state is a valid goal state
-        """
+        '''
         return s==self.goal_state
 
     def getSuccessors(self, s):
-        """
+        '''
         state: Search state
 
         For a given state, this should return a list of triples,
@@ -166,7 +166,7 @@ class LazySearchProblem:
         successor to the current state, 'action' is the action
         required to get there, and 'stepCost' is the incremental
         cost of expanding to that successor
-        """
+        '''
         # We generate successors in all four directions as long as
         # we don't go outside of the grid. The definition of outside
         # of the grid is if one of the axis turns negative
