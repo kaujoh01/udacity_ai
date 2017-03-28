@@ -86,7 +86,7 @@ def depthFirstSearch(problem):
   # Import my implementation of the search algorithm
   from my_search import GenericSearch
   # Create an instance of my search
-  s = GenericSearch()
+  s = GenericSearch('DFS')
   # Return the results of the search function
   return s.search(problem)
 
@@ -95,8 +95,12 @@ def breadthFirstSearch(problem):
   Search the shallowest nodes in the search tree first.
   [2nd Edition: p 73, 3rd Edition: p 82]
   """
-  "*** YOUR CODE HERE ***"
-  util.raiseNotDefined()
+  # Import my implementation of the search algorithm
+  from my_search import GenericSearch
+  # Create an instance of my search
+  s = GenericSearch('BFS')
+  # Return the results of the search function
+  return s.search(problem)
 
 def uniformCostSearch(problem):
   "Search the node of least total cost first. "
@@ -112,8 +116,12 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
   "Search the node that has the lowest combined cost and heuristic first."
-  "*** YOUR CODE HERE ***"
-  util.raiseNotDefined()
+  # Import my implementation of the search algorithm
+  from my_search import GenericSearch
+  # Create an instance of my search
+  s = GenericSearch('Astar')
+  # Return the results of the search function
+  return s.search(problem)
 
 
 # Abbreviations

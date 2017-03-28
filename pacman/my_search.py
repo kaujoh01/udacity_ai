@@ -1,3 +1,8 @@
+# Imports
+from util import Stack
+from util import Queue
+from util import PriorityQueue
+
 class Node:
     '''
     This class is used to hold the key information about a node. The node
@@ -12,15 +17,15 @@ class Node:
     parent   = None;  # A pointer to the parent node
     action   = None;  # The action it took to get to this state
     cost     = 0;     # Total cost to get to the current status from the root node
-    levl     = 0;     # Number of levels to get to the current state from the root node
+    heur     = 0;     # Total cost plus a heuristic to goal state
 
     # Initialization
-    def __init__(self, s, p, a, c, l):
+    def __init__(self, s, p, a, c, h):
         self.state   = s
         self.parent  = p
         self.action  = a
         self.cost    = c
-        self.levl    = l
+        self.heur    = h
 
     # Check if this is a root node
     def is_root(self):
@@ -41,26 +46,57 @@ class Node:
     # Print properties of a node
     def print_props(self):
         if self.is_root():
-            print('y_root::state:', self.state)
+            print('y_root::state:', self.state,        \
+                  'cost:'         , self.cost,         \
+                  'heur:'         , self.heur,         \
+                  '::')
         else:
-            print('n_root::state:', self.state, \
+            print('n_root::state:', self.state,        \
                   'p_state:'      , self.parent.state, \
-                  'action:'       , self.action, \
-                  'level:'        , self.levl)
-
+                  'action:'       , self.action,       \
+                  'cost:'         , self.cost,         \
+                  'heur:'         , self.heur,         \
+                  '::')
 class GenericSearch:
     '''
     This class implements a generic search algorithm. It can
     then be tailored to DFS, BFS, A* by taking input a parameter
     '''
-    def gen_root_node(self, st):
+
+    # Variables
+    search_type = 'DFS'
+
+    def __init__(self, s_type='DFS'):
+        '''
+        Initialize the type of search that is needed. The options are:
+          o DFS - Depth first search
+          o BFS - Breath first search
+          o Astar
+        '''
+        self.search_type = s_type
+
+    def get_hypotenuse(self, curr_st, goal_st):
+        '''
+        This method is used to get a hypotenuse distance between
+        the current state and the goal
+        '''
+        c_x, c_y = curr_st
+        g_x, g_y = goal_st
+        hyp = ( ((c_x-g_x)**2) + ((c_y-g_y)**2) )**0.5
+        # REVISIT: Add a correction to avoid same priorities
+        if (c_x-g_x)==0:
+            hyp = hyp - 0.5
+        return hyp
+
+    def gen_root_node(self, st, g_st):
         '''
         This method is used to generate the root node given
         the starting state of a search problem
         '''
-        return Node(st, None, None, 0, 0)
+        hyp = self.get_hypotenuse(st, g_st)
+        return Node(st, None, None, 0, hyp)
 
-    def gen_node(self, p, s):
+    def gen_node(self, p, s, g_st):
         '''
         This method is used to generate a node from a successor. The
         successor is a tuple of (state, action/direction, cost). This
@@ -68,8 +104,8 @@ class GenericSearch:
         '''
         # Calculate the total cost for the new node
         total_cost = p.cost + s[2]
-        total_levl = p.levl + 1
-        return Node(s[0], p, s[1], total_cost, total_levl)
+        total_heur = p.cost + s[2] + self.get_hypotenuse(s[0], g_st)
+        return Node(s[0], p, s[1], total_cost, total_heur)
 
     def search(self, problem):
         '''
@@ -79,13 +115,30 @@ class GenericSearch:
         generate a list of actions that can get us from the start
         state to the goal state
         '''
-        # Generate my root node
-        root_node = self.gen_root_node(problem.getStartState())
+        # Generate the root node
+        root_node = self.gen_root_node(problem.getStartState(), problem.goal)
+
+        # Check that the search type is from a list of supported
+        # ones
+        assert                         \
+            self.search_type=='DFS' or \
+            self.search_type=='BFS' or \
+            self.search_type=='Astar'
+
+        # Initialize the frontier depending on the search type
+        frontier = None
+        if self.search_type == 'DFS':
+            frontier = Stack()
+        if self.search_type == 'BFS':
+            frontier = Queue()
+        if self.search_type == 'Astar':
+            frontier = PriorityQueue()
+
         # Initialize the frontier list to be pointing to the start
         # state where we being our search. Note that typically we will
         # never be asked to search if we are already at the goal state, so
         # no need to perform that check here
-        frontier = [root_node]
+        frontier.push(root_node, root_node.cost)
         search_iter = 0
         # Initialize the explored states to null, which is a dictionary. The
         # reason why we choose a dictionary is to be able to do a hash lookup
@@ -100,7 +153,7 @@ class GenericSearch:
             assert search_iter<1000
             # Catch illegal draining of frontiers before we have
             # found a solution
-            assert len(frontier)
+            assert not frontier.isEmpty()
             # Extract the current node based on search parameter
             # from the frontier to determine if we have found our
             # goal
@@ -116,7 +169,8 @@ class GenericSearch:
             # the successors for my frontier
             for s in problem.getSuccessors(current_state):
                 if s[0] not in explored_states.keys():
-                    frontier.append(self.gen_node(current_node, s))
+                    new_node = self.gen_node(current_node, s, problem.goal)
+                    frontier.push(new_node, new_node.heur)
 
 class LazySearchProblem:
     '''
@@ -131,6 +185,7 @@ class LazySearchProblem:
     strt_state = None
     goal_state = None
     grid_size  = None
+    goal       = None # Alias to goal_state
 
     # Initialization
     def __init__(self):
@@ -143,6 +198,7 @@ class LazySearchProblem:
         # is also the starting state. This is useful to check our search
         # doesn't die horribly
         self.goal_state = (randint(0,self.grid_size-1),randint(0,self.grid_size-1))
+        self.goal = self.goal_state
 
     def getStartState(self):
         '''
@@ -187,9 +243,9 @@ class LazySearchProblem:
 if __name__ == '__main__':
     # Instantiate a new search problem
     sprob = LazySearchProblem()
+    print('Size:', sprob.grid_size, 'Start:', sprob.strt_state, 'Goal:', sprob.goal_state)
     # Instantiate the search algorithm
-    salgo = GenericSearch()
+    salgo = GenericSearch('BFS')
     # Solve the problem and print the solution
     solution = salgo.search(sprob)
-    print('Size:', sprob.grid_size, 'Start:', sprob.strt_state, 'Goal:', sprob.goal_state)
     print(solution)
